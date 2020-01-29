@@ -454,9 +454,124 @@ export const query = graphql`
 
 ```
 
-では再度 Ctrl+C で終了して`gatsgy develop`で、起動しなおします。
+では再度 Ctrl+C で終了して`gatsby develop`で、起動しなおします。
 md のファイル名何にしましたか？
 `http://localhost:8000/kokoni-md-file-mei-irete-kudasai`
 ローカルホストにアクセスすると、作成したｍｄファイルがちゃんと出てくるはずです。出てきましたか？出てくれば勝ちです。
 
 ### リンクとか ASC とかなんかそういうやつ
+
+まず新しい記事を一番上に出す的なやつをします
+
+```index.js
+~~~
+略
+~~~
+
+export const query = graphql`
+  query {
+    allMarkdownRemark(sort: { fields: [frontmatter___date], order: DESC }) {
+      // sortでできるので楽です。
+      totalCount
+      edges {
+        node {
+          id
+          frontmatter {
+            title
+            date
+            description
+          }
+          fields {
+            slug
+          }
+          // slugつくってるのでそれももってきます。
+          excerpt
+        }
+      }
+    }
+  }
+`
+```
+
+これで順番は変えられました。
+とりあえず、色とか変えたいしスタイリングしようぜ！というわけで、インストールします。
+`npm i gatsby-plugin-styled-components styled-components babel-plugin-style`
+インストールしおわったら、再度`gatsby-config.js`を開いていれたったぞ！と伝えます。
+
+```gatsby-config.js
+~~~
+略
+~~~
+
+    `gatsby-transformer-remark`,
+    `gatsby-transformer-sharp`,
+    `gatsby-plugin-styled-components`, //ここらへんにいれときます。どこでもいいです
+    `gatsby-plugin-sharp`,
+
+~~~
+略
+~~~
+```
+
+ここらへんで、`gatsby develop`しておきます。
+index ページをスタイリングします。オシャレなページにしてあげてください。私はできません。
+
+```
+import React from "react"
+import { graphql, Link } from "gatsby"
+import styled from "styled-components"
+// スタイリングするぜ！と伝えてあげましょう
+
+import Layout from "../components/layout"
+import Image from "../components/image"
+import SEO from "../components/seo"
+
+const BlogLink = styled(Link)`
+  text-decoration: none;
+`
+// リンクもかっこよくしまくってください。
+
+const BlogTitle = styled.h3`
+  margin-bottom: 20px;
+  color: green;
+`
+// タイトルとかもかっこよくしてやってください。
+
+export default ({ data }) => {
+  console.log(data)
+  return (
+    <Layout>
+      <SEO title="Home" />
+      <div>
+        <h1>BLOG WHATEVER</h1>
+        <h5>記事数: { data.allMarkdownRemark.totalCount }</h5>
+        {
+          data.allMarkdownRemark.edges.map(({ node }) => (
+            <div key={node.id}>
+            <BlogLink to={node.fields.slug}>
+              <BlogTitle>{
+                node.frontmatter.title } * { node.frontmatter.date }
+              </BlogTitle>
+            </BlogLink>
+              <p>{node.excerpt}</p>
+            </div>
+// ここらへんの書き方はReactで楽しくやってください。
+          ))
+        }
+      </div>
+
+  </Layout>
+)}
+
+~~~
+略
+~~~
+```
+
+`http://localhost:8000/`にアクセス！！！！！！するとちゃんとスタイリングされてるかと思います。おしゃれですか？何を食べればかっこいいデザインが作れるようになりますか？世の中のかっこいいデザインを作る人々はすごすぎます。
+
+### localhost マンからの脱却
+
+localhost のままだとまじのチラ裏です。とりあえず全世界に公開しまくります。ネットは公開するから意味があるんやでと教えられた気がします。
+これも Gatsby ならすぐなのでささーっとやっていきます。AWS 難しすぎかよまじで無理病む、とかないのでやります。
+Github でまず公開します。ここらへんは割愛させてください。[Github に新規リポジトリを追加](https://qiita.com/sodaihirai/items/caf8d39d314fa53db4db)等を見ながらやってください。Github 様様です。Github があるから生きていけるくらいの気持ちで感謝の念を飛ばします。
