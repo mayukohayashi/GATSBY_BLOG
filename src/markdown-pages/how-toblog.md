@@ -10,7 +10,9 @@ date: "2022-01-27"
 
 気分転換に Gatsby でブログ作って気分転換します。
 自分は屑で、説明下手です。許してください！！！先に謝罪をする文化！！！！
-あと本当に無知なので、Gatsby についての説明などは一切できません。もちろん、React も、Node.js も、GraphQL も何もわからない。
+自分用メモなので文章が糞。不快になります。
+
+本当に無知なので、Gatsby についての説明などは一切できません。もちろん、React も、Node.js も、GraphQL も何もわからない。
 素晴らしい記事や公式ドキュメントがあるので、是非！すごく！勉強になる！！
 
 - [Gatsby.js 公式 ](https://www.gatsbyjs.com/) Gatsby は紫推し
@@ -189,7 +191,7 @@ export default ThirdPage
 公式でも説明してくれていますが、GraphQL クエリとか色々がわかっていると捗るかと思います。
 `http://localhost:8000/___graphql`を見ると、自分が今つくってるものの GraphQL 丸わかりなので開いてみるといいとおもいます。
 
-GraphQL クエリに関しては[プレイグラウンド](https://github.com/prisma-labs/graphql-playground)で、色々しながらなんか分かるような気がする気がします。私は気がしているだけなので、ちょっとアレなのですみません。
+GraphQL クエリに関しては[プレイグラウンド](https://github.com/prisma-labs/graphql-playground)で、色々しながらなんか分かるような気がする気がします。[GraphQL のクエリを基礎から整理してみた](https://qiita.com/shunp/items/d85fc47b33e1b3a88167)この記事を読ませていただきながら色々すると捗るかと思います。
 
 トランスフォーマーがインストールされたら MD フォルダと config に追加をします。
 
@@ -230,7 +232,7 @@ module.exports = {
       options: {
         name: `images`,
         path: `${__dirname}/src/images`,
-      },
+      }
     },
   これより↑ここをコピー。
   ↓ここに貼り付け
@@ -239,9 +241,11 @@ module.exports = {
       options: {
         name: `markdowns`, ⇠markdownにしてください。
         path: `${__dirname}/src/markdown-pages`, ⇠ここにさっき作ったフォルダの場所記載
-      },
+      }
     },
   ↑ここまで貼り付けられてるはず。
+
+    `gatsby-transformer-remark`, ⇠これもいれてください
 
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
@@ -269,9 +273,71 @@ module.exports = {
 二記事くらい適当に書いてください。
 
 ちなみに、`gatsby develop`しているターミナルは勝手に動いてくれているので感謝の気持ちは忘れずに、ありがとうと声をかけてあげてください。
-ただ、今回トランスフォーマーをインストールしたので、一度 Ctrl+C してさよならしてください。
-もう一度、`gatsby develop`すると、トランスフォーマーが入っている状態で develop してくれます。感謝。
-
-`http://localhost:8000/___graphql`を開き、Explorer をクリックすると左側に`query MyQuery`があります。その下に`allMarkdownRemark`みたいなのがあると嬉しいです。
+ただ、今回トランスフォーマーをインストールしたり、プラグインをいれたので、一度 Ctrl+C してさよならしてください。
+もう一度、`gatsby develop`すると、トランスフォーマーが入っている状態というか新しいプラグイン導入されてるというかそんな具合で develop してくれます。感謝。
 
 ### ブログっぽくする準備
+
+`http://localhost:8000/___graphql`を開き、Explorer をクリックすると左側に`query MyQuery`があります。その下に`allMarkdownRemark`みたいなのがあると嬉しいです。
+なんかこっから見せたいやつをひっぱってきてもらえばいいです。html を見てもらうとさっき適当に書いた md ファイルの内容が html 化しているのでなんだか嬉しい気持ちになります。
+ブログなんで自分は excerpt とかをもってこようと思います。
+まだリンクとかは貼り付けてないので、雰囲気のみ。データちゃんと反映されてるとなんでもかんでも嬉しいです。
+
+```index.js
+
+import React from "react"
+import { graphql, Link } from "gatsby"
+// ↑にgraphqlを。gatsbyがつくってくれてるものなので安心して使います。詳しくは公式に。
+// dataがあったらすぐ「あーgraphqlのことね」とわかってくれるGatsbyの優しさに夢女る。
+
+import Layout from "../components/layout"
+import Image from "../components/image"
+import SEO from "../components/seo"
+// Imageも↑のLinkもまだ使っていませんが今後のためにステイさせておく。
+
+export default ({ data }) => { // export defaultは１コンポーネント１回限り！らしいので、こんなかんじにしときます
+  console.log(data)
+  return (
+    <Layout>
+      <SEO title="Home" />
+      <div>
+        <h1>タイトルとか入れるといい</h1>
+        <h5>{ data.allMarkdownRemark.totalCount }</h5> // ここらへん下のqueryからきてるやなとかわかりやすくていいですね。
+        {
+          data.allMarkdownRemark.edges.map(({ node }) => (
+            <div key={node.id}>
+              <h3>{ node.frontmatter.title } * { node.frontmatter.date }</h3>
+              <p>{node.excerpt}</p>
+            </div>
+
+          ))
+        }
+      </div>
+
+  </Layout>
+)}
+
+// ここに queryを定義！！qraphqlしてあげるだけで理解してくれるGatsbyまじサンキュー。
+export const query = graphql`
+  query {
+    allMarkdownRemark {
+      totalCount
+      edges {
+        node {
+          id
+          frontmatter {
+            title
+            date
+            description
+          }
+          excerpt
+        }
+      }
+    }
+  }
+`
+```
+
+そこはかとなくブログインデックスページ的なものができていればいいです。
+
+###
