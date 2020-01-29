@@ -373,9 +373,90 @@ exports.onCreateNode = ({ node, getNode, actions }) =>{
   }
 }
 // onCreateNodeや、createFilePathとかも公式がちゃんと説明してくれているので便利に使わせてもらいましょう。
-
 ```
 
 では Ctrl+C で終了して`gatsgy develop`で、起動しなおします。
 `http://localhost:8000/___graphql`を開き Explorer を見ると`nodes`の下階層に`fields`が、新しく誕生しているのがわかります。
 こいつが ↑ で作った slug を持っています。こいつを見てもらうと、md ファイルの内容が Html になってるのとかわかって嬉しくなります。
+
+確認したところで、`gatsby-node.js`に続きかいていきます。graphql をもってくるぞ、と。
+
+```
+const path = require(`path`)
+// パスつかうぞと一番上の行に宣言しておいてください。
+
+~~~
+中略
+~~~
+
+export.createPages = ({ graphql, actions }) => {
+  const { createPage } = actions
+  return graphql(``) // return geaphql``でもええんちゃうんかい！？と思いますが（Reactちゃうんかい！)Node.jsだとES6がアレなのでこっちで書いてください、
+  {
+    allMarkdownRemark {
+      edges {
+        node {
+          id
+          fields {
+            slug
+          }
+        }
+      }
+    }
+  }
+  `).then(result => {
+    result.data.allMarkdownRemark.edges.forEach(({ node }) => {
+      createPage({
+        path: node.fields.slug,
+        component: path.resolve(`./src/templates/blog-post.js`), // このコンポーネントを次につくっていきます。
+        context: {
+          slug: node.fields.slug
+        }
+      })
+    })
+  })
+}
+```
+
+ブログページ用に別コンポーネントを作ります`src`内に`templates`フォルダを作り、その中に`blog-post.js`というファイルを作るといいです。これがブログのデフォルトテンプレートです。
+
+```blog-post.js
+
+import React from 'react';
+import { graphql } from 'gatsby';
+import Layout from '../components/layout';
+// 必要なものをインポートしまくります。
+
+export default ({ data }) => {
+  const post = data.markdownRemark;
+  return (
+    <Layout>
+      <div>
+        <h1>{post.frontmatter.title}</h1>
+        <div dangerouslySetInnerHTML={{ __html: post.html }} />
+      </div>
+    </Layout>
+  )
+}
+// dangerouslySetInnerHTMLは面白いので使っていきます。
+
+export const query = graphql`
+  query($slug: String!) {
+    markdownRemark( fields: { slug: { eq: $slug }}) {
+      html
+      frontmatter {
+        title
+      }
+    }
+  }
+`
+// さっきslugつくったのをもってきます。
+
+```
+
+では再度 Ctrl+C で終了して`gatsgy develop`で、起動しなおします。
+md のファイル名何にしましたか？
+`http://localhost:8000/kokoni-md-file-mei-irete-kudasai`
+ローカルホストにアクセスすると、作成したｍｄファイルがちゃんと出てくるはずです。出てきましたか？出てくれば勝ちです。
+
+### リンクとか ASC とかなんかそういうやつ
