@@ -340,4 +340,42 @@ export const query = graphql`
 
 そこはかとなくブログインデックスページ的なものができていればいいです。
 
-###
+### 個々のページをつくる。
+
+インデックスだけできても仕方ないので、作ったマークダウンページを１記事１記事しっかりページにしてやらなきゃです。
+なので、ここで`gatsby-node.js`を触っていきます。node って IT 頻出単語すぎてたまに発狂しそうになります。
+
+```
+/**
+ * Implement Gatsby's Node APIs in this file.
+ *
+ * See: https://www.gatsbyjs.org/docs/node-apis/
+ */
+
+// You can delete this file if you're not using it
+// ↑消してください。このファイルに記載するAPIこんなかんじやで、と公式が丁寧に説明してくれるので読んでおくとはかどります。
+// Node.jsっぽいけどNode.jsじゃあないという特徴があります。JSわかるとわかる。私はわからない。
+
+const { createFilePath } = require(`gatsby-source-filesystem`)
+// Gatsbyは``推し
+
+exports.onCreateNode = ({ node, getNode, actions }) =>{
+  const { createNodeField } = actions
+
+  if (node.internal.type === `MarkdownRemark`) {
+    const slug = createFilePath({ node, getNode })
+
+    createNodeField ({
+      node,
+      name: `slug`,
+      value: slug
+    })
+  }
+}
+// onCreateNodeや、createFilePathとかも公式がちゃんと説明してくれているので便利に使わせてもらいましょう。
+
+```
+
+では Ctrl+C で終了して`gatsgy develop`で、起動しなおします。
+`http://localhost:8000/___graphql`を開き Explorer を見ると`nodes`の下階層に`fields`が、新しく誕生しているのがわかります。
+こいつが ↑ で作った slug を持っています。こいつを見てもらうと、md ファイルの内容が Html になってるのとかわかって嬉しくなります。

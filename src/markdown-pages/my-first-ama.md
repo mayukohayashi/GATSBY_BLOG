@@ -1,7 +1,7 @@
 ---
-title: 'My First AMA'
-date: '2017-08-21'
-description: 'My first AMA :)'
+title: 'My First TEST'
+date: '2017-08-01'
+description: 'My first TEST PAGE ❗'
 ---
 
 Thank you everyone who enjoyed the AMA! It was my first one and I'd love to do it again.
