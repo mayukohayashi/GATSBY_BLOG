@@ -16,7 +16,6 @@ const BlogTitle = styled.h3`
 `
 
 export default ({ data }) => {
-  console.log(data)
   return (
     <Layout>
       <SEO title="Home" />
